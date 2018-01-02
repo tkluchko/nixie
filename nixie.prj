@@ -22,7 +22,7 @@ Active0=0
 EditorPanel0=0
 PageIndex0=0
 EditorPanel1=0
-TimeStamp1=1263058467
+TimeStamp1=1264846286
 PageIndex1=1
 [Compiler]
 RebuildAll=0
@@ -117,7 +117,7 @@ WarningExternalDeclaredNeverDefined=1
 WarningUnknownPragma=1
 DebugBootLoader=0
 WatchAVR8LAutoVariables=0
-Build=42
+Build=63
 UseEEPROMLocation0=1
 [Assembler]
 OutputFormat=1
@@ -202,14 +202,14 @@ Row=0
 Column=0
 ScrollPosX=0
 ScrollPosY=0
-TimeStamp=1263075409
+TimeStamp=1265483368
 [BookmarksFoldedCode]
 Files=1
 F1=nixie.c
 [Bookmarks1]
-TimeStamp=1263058467
-Row=18
-Column=16
+TimeStamp=1264846286
+Row=27
+Column=58
 ScrollPosX=0
 ScrollPosY=0
 BK0=-1
@@ -222,8 +222,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode1]
-Blocks=0
 [HeadersList]
 Files=1
 F1=C:\Users\ttfaire\Documents\GitHub\nixie\nixie.c
@@ -234,3 +232,5 @@ F2=C:\cvavr2\inc\mega8_bits.h
 F3=C:\cvavr2\inc\delay.h
 F4=ds3231_twi.c
 F5=ds3231_twi.h
+[FoldedCode1]
+Blocks=0

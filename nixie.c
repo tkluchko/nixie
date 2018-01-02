@@ -5,7 +5,13 @@
 #define DIGIT_1  128
 #define DIGIT_2  64
 #define DIGIT_3  32
-#define DIGIT_4 16 
+#define DIGIT_4  16 
+
+#define PIN_A  1
+#define PIN_B  2
+#define PIN_C  4
+#define PIN_D  8
+
 
 #define MODE_SHOW_MAIN_INFO 0
 #define MODE_SET_DATE_YEAR 1
@@ -17,6 +23,21 @@
 #define MODE_SET_TIME_SECONDS 7
 #define MODE_SHOW_SECONDS 8
 
+#define BLANK_DIGIT 10
+
+static flash unsigned char digit[] = {
+	0,
+	PIN_A,
+	PIN_B,
+	PIN_B + PIN_A, 
+	PIN_C,
+	PIN_C + PIN_A,
+	PIN_C + PIN_B,
+	PIN_C + PIN_B + PIN_A,
+	PIN_D,
+	PIN_D + PIN_A
+};
+
 static flash unsigned char commonPins[] = {
 	DIGIT_1,
 	DIGIT_2,
@@ -26,6 +47,7 @@ static flash unsigned char commonPins[] = {
 
 unsigned char digit_out[4], cur_dig = 0;
 unsigned char displayCounter = 0;
+unsigned char displayDigit = 0;
 
 unsigned char seconds;
 unsigned char minutes;
@@ -46,7 +68,10 @@ bit button_2_on3;
 bit button_3_on3;
 
 unsigned char mode;
+unsigned char prevLastDigit;
+unsigned char lastDigit;
 bit show_point;
+bit lastDigitChanged;
 
 void doBtn1Action(void) {
 	mode = mode < 7 ? (mode + 1) : 0;
@@ -264,9 +289,11 @@ interrupt [TIM1_OVF] void timer1_ovf_isr(void) {
 interrupt [TIM2_OVF] void timer2_ovf_isr(void) {
 	if(displayCounter == 0) {
 		PORTD&= 0b00000000;
-		PORTD=digit_out[cur_dig];
-
-		PORTD |= commonPins[cur_dig];
+		displayDigit = digit_out[cur_dig];
+		if(displayDigit < 10) {
+			PORTD=digit[displayDigit];
+			PORTD |= commonPins[cur_dig];
+		}
 	
 		
 		cur_dig++;
@@ -276,37 +303,58 @@ interrupt [TIM2_OVF] void timer2_ovf_isr(void) {
 	}
 }
 
+unsigned char nextDigit(unsigned char digit) {
+	return (digit + 1) % 10;
+}
 
+void displayMainInfo() {
+    unsigned char j = 0; 
+	if(lastDigitChanged) {
+		for(j = 0; j < 10; j++) {
+			digit_out[0] = nextDigit(digit_out[0]);
+			digit_out[1] = nextDigit(digit_out[1]);
+			digit_out[2] = nextDigit(digit_out[2]);
+			digit_out[3] = nextDigit(digit_out[3]);
+			delay_ms(300);
+		}
+		lastDigitChanged = 0;
+	} else {
+		digit_out[0] = hours / 10;
+		digit_out[1] = hours % 10;
+		digit_out[2] = minutes / 10;
+		lastDigit = minutes % 10;
+
+		lastDigitChanged = prevLastDigit != lastDigit;
+		prevLastDigit = lastDigit;
+		digit_out[3] = lastDigit;
+	}
+}
 
 void displayInfo(void) {
 	switch (mode) {
 	case MODE_SHOW_MAIN_INFO:
-		digit_out[0] = hours / 10;
-		digit_out[1] = hours % 10;
-		digit_out[2] = minutes / 10;
-		digit_out[3] = minutes % 10;
+		displayMainInfo();
 		break;
-
 	case MODE_SET_DATE_YEAR:
-		digit_out[0] = 0;
+		digit_out[0] = 8;
 		digit_out[1] = 1;
 		digit_out[2] = year / 10;
 		digit_out[3] = year % 10;
 		break;
 	case MODE_SET_DATE_MONTH:
-		digit_out[0] = 0;
+		digit_out[0] = 8;
 		digit_out[1] = 2;
 		digit_out[2] = month / 10;
 		digit_out[3] = month % 10;
 		break;
 	case MODE_SET_DATE_DAY_OF_WEEK:
-		digit_out[0] = 0;
+		digit_out[0] = 8;
 		digit_out[1] = 3;
 		digit_out[2] = day / 10;
 		digit_out[3] = day % 10;
 		break;
 	case MODE_SET_DATE_DAY:
-		digit_out[0] = 0;
+		digit_out[0] = 8;
 		digit_out[1] = 4;
 		digit_out[2] = date / 10;
 		digit_out[3] = date % 10;
@@ -331,8 +379,8 @@ void displayInfo(void) {
 		digit_out[3] = seconds % 10;
 		break;
 	case MODE_SHOW_SECONDS:
-		digit_out[0] = 0;
-		digit_out[1] = 0;
+		digit_out[0] = BLANK_DIGIT;
+		digit_out[1] = BLANK_DIGIT;
 		digit_out[2] = seconds / 10;
 		digit_out[3] = seconds % 10;
 		break;
